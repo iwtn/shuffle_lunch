@@ -1,4 +1,5 @@
 require 'set'
+require './group.rb'
 
 class Set
   def pairs
@@ -28,15 +29,13 @@ class Grouping
     links = make_heuristic_from_past(@past_set)
     link_amount_hash = make_link_amount_hash(@people, links)
 
-    groups = {}
-    @group_size.times { |i| groups[i] = Set.new }
+    groups = @group_size.times.map { |n| Group.new(@max_member_size) }
 
     link_amount_hash.sort {|a, b| b[1]<=>a[1]}.map{|k, v| k }.each do |person|
-      group = select_group(groups, person, links)
-      groups[group].add person
+      select_group(groups, person, links).add person
     end
 
-    groups.values
+    groups.map(&:members)
   end
 
   private
@@ -76,15 +75,15 @@ class Grouping
 
   def select_group(groups, person, links)
     group_amounts = {}
-    groups.each do |k, s|
-      if s.size >= @max_member_size
-        group_amounts[k] = MAX_AMOUNT
+    groups.each do |g|
+      if g.full?
+        group_amounts[g] = MAX_AMOUNT
       else
         amount = 0
-        s.each do |member|
+        g.each do |member|
           amount += links[Set[member, person]].to_i
         end
-        group_amounts[k] = amount
+        group_amounts[g] = amount
       end
     end
     group_amounts.min{ |x, y| x[1] <=> y[1] }[0]
