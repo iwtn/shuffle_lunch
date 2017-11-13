@@ -6,4 +6,5 @@ past_set = [
   [ people.each_slice(10).map{|ten_persons| Set.new(ten_persons)} ],
 ]
 
-p Grouping.new(people, past_set, 10).execute
+p Grouping.by_group_size(people, past_set, 10)
+p Grouping.by_member_size(people, past_set, 5)

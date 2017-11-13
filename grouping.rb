@@ -11,11 +11,17 @@ class Set
 end
 
 class Grouping
+  MAX_AMOUNT = 2 ** ([42].pack('i').size * 16 - 2) - 1
 
-  def initialize(people, past_set, group_size)
-    @people = people
-    @past_set = past_set
-    @group_size = group_size
+  private_class_method :new
+
+  def self.by_group_size(people, past_set, group_size)
+    new(people, past_set, group_size).execute
+  end
+
+  def self.by_member_size(people, past_set, max_member_size)
+    group_size = people.size / max_member_size
+    new(people, past_set, group_size).execute
   end
 
   def execute
@@ -30,7 +36,16 @@ class Grouping
       groups[group].add person
     end
 
-    groups
+    groups.values
+  end
+
+  private
+
+  def initialize(people, past_set, group_size)
+    @people = people
+    @past_set = past_set
+    @group_size = group_size
+    @max_member_size = people.size / group_size
   end
 
   def make_heuristic_from_past(past_set)
@@ -62,11 +77,15 @@ class Grouping
   def select_group(groups, person, links)
     group_amounts = {}
     groups.each do |k, s|
-      amount = 0
-      s.each do |member|
-        amount += links[Set[member, person]].to_i
+      if s.size >= @max_member_size
+        group_amounts[k] = MAX_AMOUNT
+      else
+        amount = 0
+        s.each do |member|
+          amount += links[Set[member, person]].to_i
+        end
+        group_amounts[k] = amount
       end
-      group_amounts[k] = amount
     end
     group_amounts.min{ |x, y| x[1] <=> y[1] }[0]
   end
