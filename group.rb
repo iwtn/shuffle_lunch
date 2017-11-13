@@ -1,27 +1,19 @@
 require 'set'
+require 'forwardable'
 
 class Group
+  extend Forwardable
+
   def initialize(max_size)
     @max_size = max_size
     @members = Set.new
   end
 
+  def_delegators :@members, :size, :each
+  attr_reader :members
+
   def add(member)
     @members.add member unless full?
-  end
-
-  def size
-    @members.size
-  end
-
-  def each
-    @members.each do |member|
-      yield member
-    end
-  end
-
-  def members
-    @members
   end
 
   def full?
