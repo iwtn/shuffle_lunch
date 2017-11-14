@@ -40,12 +40,8 @@ class Grouping
   def make_heuristic_from_past(past_set)
     past_pheromone = Hash.new(0)
     past_set.each do |past|
-      past.each do |sets|
-        sets.each do |set|
-          set.pairs.each do |pair|
-            past_pheromone[pair] += 1
-          end
-        end
+      Set.new(past).pairs.each do |pair|
+        past_pheromone[pair] += 1
       end
     end
     past_pheromone
